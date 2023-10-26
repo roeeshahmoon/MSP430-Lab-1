@@ -1,0 +1,61 @@
+#include <msp430xG46x.h>    
+ 
+ORG 1100h
+
+Id1       DW      0,6,5,6,4,7,5,9  ;Shahmon
+Id2       DW      1,6,5,0,8,3,3,2  ;Neal
+SIZE      DW      9
+
+          RSEG    CODE
+
+main    clr     R4
+        clr     R7
+        clr     R12
+        mov     #Id1,R5       ; R5 is an array pointer of Id1
+        mov     #Id2,R10       ; R6 is an array pointer of Id2
+        mov     SIZE,R9       ; R9 <- Mem[SIZE]
+
+Loop     DEC   R9             ;sum for id
+         JZ    L1
+         MOV   @R5,R6 
+         ADD   R6,R7
+         incd  R5
+         MOV   @R10,R11
+         ADD   R11,R12
+         incd  R10
+         jmp   Loop
+         
+L1       MOV   R7,R5        ;check is odd
+         RRA   R5
+         JC    L2
+         MOV   R12,R10
+         RRA   R10
+         JC    L0
+         JMP   L
+         
+L0       MOV   R12,R4
+         JMP   L
+
+
+L2       MOV   R12,R10
+         RRA   R10
+         JC    Lcm
+         MOV   R7,R4
+         JMP   L
+
+Lcm      CMP R12,R7        ;compare
+         JN  RESULT
+         MOV R12,R4
+         JMP L
+         
+RESULT   MOV R7,R4        ;else 
+        
+L        JMP   L                            ; infinite loop
+         NOP                                ; to remove warnings
+
+;-------------------------------------------------------------------------------
+        COMMON INTVEC ; Interrupt Vectors
+;-------------------------------------------------------------------------------
+        ORG RESET_VECTOR ; POR, ext. Reset
+        DW main
+        END
